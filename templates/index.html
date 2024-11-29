@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Price Updates</title>
+</head>
+<body>
+    <h1>Real-Time Gold Prices</h1>
+    <ul id="gold-prices"></ul>
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        // Listen for welcome message
+        socket.on('welcome_message', (data) => {
+            console.log(data.message);
+        });
+
+        // Listen for gold price updates
+        socket.on('gold_price_update', (data) => {
+            console.log('Gold price update:', data);
+
+            // Update the UI
+            const priceList = document.getElementById('gold-prices');
+            priceList.innerHTML = ''; // Clear previous data
+            for (const [goldType, price] of Object.entries(data)) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${goldType}: AED ${price}`;
+                priceList.appendChild(listItem);
+            }
+        });
+    </script>
+</body>
+</html>
