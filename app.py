@@ -3,9 +3,11 @@ from flask_socketio import SocketIO
 from threading import Event
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='gevent')
@@ -23,21 +25,56 @@ def fetch_gold_prices():
         url = 'https://dubaicityofgold.com/'
         driver.get(url)
 
-        driver.implicitly_wait(5)
+        # Wait for the gold price elements to be visible (up to 10 seconds)
+        gold_elements = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".dcog-gold-rate-table div"))
+        )
 
-        gold_elements = driver.find_elements(By.CSS_SELECTOR, "ul.goldtable li")
+        print(f"Found {len(gold_elements)} gold price elements.")
+
         prices = {}
         for element in gold_elements:
             text = element.text.strip()
+            print({text})
             if text:
-                gold_type, price_value = text.split(" - AED ")
-                prices[gold_type.strip()] = price_value.strip()
+                try:
+                    gold_type, price_value = text.split(" - AED ")
+                    prices[gold_type.strip()] = price_value.strip()
+                except ValueError:
+                    print(f"Skipping invalid element: {text}")
 
         driver.quit()
+        print(f"Gold Prices: {prices}")
         return prices
     except Exception as e:
         print(f"Error fetching gold prices: {e}")
         return {"error": str(e)}
+
+# def fetch_gold_prices():
+#     """Fetch gold prices using Selenium."""
+#     try:
+#         chrome_options = Options()
+#         chrome_options.add_argument("--headless")
+#         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+#
+#         url = 'https://dubaicityofgold.com/'
+#         driver.get(url)
+#
+#         driver.implicitly_wait(5)
+#
+#         gold_elements = driver.find_elements(By.CSS_SELECTOR, "ul.goldtable li")
+#         prices = {}
+#         for element in gold_elements:
+#             text = element.text.strip()
+#             if text:
+#                 gold_type, price_value = text.split(" - AED ")
+#                 prices[gold_type.strip()] = price_value.strip()
+#
+#         driver.quit()
+#         return prices
+#     except Exception as e:
+#         print(f"Error fetching gold prices: {e}")
+#         return {"error": str(e)}
 
 
 @app.route('/')
@@ -62,7 +99,7 @@ def background_scraping():
             socketio.emit('gold_price_update', prices)
         else:
             print("Error in fetching prices for WebSocket clients:", prices["error"])
-        socketio.sleep(600)  # Wait 10 minute before fetching again.
+        socketio.sleep(60)  # Wait 10 minute before fetching again.
 
 
 @socketio.on('connect')
