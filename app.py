@@ -8,6 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+import os
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='gevent')
@@ -127,6 +128,5 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
 
-    # socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
