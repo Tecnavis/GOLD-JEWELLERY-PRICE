@@ -9,7 +9,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import os
-
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='gevent')
 connected_clients = 0
@@ -19,6 +18,12 @@ thread_stop_event = Event()
 def fetch_gold_prices():
     """Fetch gold prices using Selenium."""
     try:
+        # Set up Chrome options for headless browsing
+        # chrome_options = Options()
+        # chrome_options.add_argument('--headless')  # Run Chrome in headless mode (no GUI)
+        # chrome_options.add_argument('--no-sandbox')  # Prevent sandbox issues (useful for servers)
+        # chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome resource limit issues
+
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -128,5 +133,5 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
-
+    # socketio.run(app, host="0.0.0.0", port=5001, debug=False)
+    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5001)), debug=False)
