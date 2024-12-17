@@ -105,7 +105,7 @@ def background_scraping():
             socketio.emit('gold_price_update', prices)
         else:
             print("Error in fetching prices for WebSocket clients:", prices["error"])
-        socketio.sleep(60)  # Wait 10 minute before fetching again.
+        socketio.sleep(600)  # Wait 10 minute before fetching again.
 
 
 @socketio.on('connect')
