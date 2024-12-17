@@ -40,6 +40,8 @@ ENV DISPLAY=:99
 COPY requirements.txt /app/
 RUN pip install -r /app/requirements.txt
 
+# Install eventlet for async mode
+RUN pip install eventlet
 # Set the working directory
 WORKDIR /app
 
@@ -48,7 +50,8 @@ COPY . /app/
 
 # Run the application using Gunicorn
 #CMD ["gunicorn", "app:app"]
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--worker-class", "eventlet", "--bind", "0.0.0.0:5000", "app:app"]
 
 
 
